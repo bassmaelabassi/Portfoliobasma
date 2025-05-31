@@ -1,58 +1,46 @@
 const Contact = require('../models/Contact');
-const nodemailer = require('nodemailer');
 
-// Configure nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
-
-// @desc    Submit a new contact message
-// @route   POST /api/contact
-// @access  Public
 const submitContact = async (req, res) => {
     try {
-        const { name, email, message } = req.body;
+        const { name, email, message, subject } = req.body;
 
-        // Save to database
         const contact = await Contact.create({
             name,
             email,
-            message
+            message,
+            subject: subject || 'No subject'
         });
-
-        // Send confirmation email
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Thank you for contacting me',
-            html: `
-                <h1>Thank you for your message!</h1>
-                <p>Dear ${name},</p>
-                <p>I have received your message and will get back to you as soon as possible.</p>
-                <p>Best regards,</p>
-                <p>Your Name</p>
-            `
-        };
-
-        await transporter.sendMail(mailOptions);
 
         res.status(201).json({
             success: true,
-            message: 'Message sent successfully'
+            message: 'Message sent successfully',
+            data: contact
         });
     } catch (error) {
         console.error('Contact submission error:', error);
+      
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation error',
+                errors: Object.values(error.errors).map(err => err.message)
+            });
+        }
+
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Duplicate entry'
+            });
+        }
         res.status(500).json({
             success: false,
-            message: 'Error sending message'
+            message: 'Error sending message',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 };
 
 module.exports = {
-  submitContact
+    submitContact
 }; 

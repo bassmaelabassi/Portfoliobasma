@@ -3,19 +3,23 @@ const mongoose = require('mongoose');
 const contactSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Le nom est requis'],
+    required: [true, 'Name is required'],
     trim: true
   },
   email: {
     type: String,
-    required: [true, 'L\'email est requis'],
+    required: [true, 'Email is required'],
     trim: true,
     lowercase: true
   },
   message: {
     type: String,
-    required: [true, 'Le message est requis'],
+    required: [true, 'Message is required'],
     trim: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true

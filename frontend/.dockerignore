@@ -1,0 +1,9 @@
+# Ignorer les fichiers inutiles pour l'image Docker
+node_modules
+build
+.dockerignore
+Dockerfile
+.env
+.git
+.gitignore
+README.md
